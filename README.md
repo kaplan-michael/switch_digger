@@ -8,10 +8,26 @@ any testing or help is apreciated
 
 
 HOW TO RUN?
-1) install requirements `pip3 install -r requirements.txt`
-2) install and setup postgress (working on db schema)
-3) edit postgress connection variables at the beging of the script
-4) edit main.cfg
+1. Install requirements 
+
+`pip3 install -r requirements.txt`
+
+2. Install and setup postgres 
+3. Create postgres database 
+
+
+`CREATE TABLE maclist(switch text, port text, mac text, vendor text);`
+
+`CREATE TABLE arplist(ip text, mac text UNIQUE);`
+
+`CREATE TABLE devices(switch text, port text, mac text, vendor text, ip text, updated date);`
+
+`CREATE UNIQUE INDEX unique_index ON devices (switch, port);`
+
+`CREATE UNIQUE INDEX unique_index ON maclist (switch, port);`
+
+4. Edit postgress connection variables at the beging of the script
+5. Edit main.cfg
 
 
 Web Gui for easy searching is planned

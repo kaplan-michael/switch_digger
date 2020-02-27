@@ -47,22 +47,24 @@ def cleardataarp():
 
 def dbmac(switch,port,mac,vendor):
     postgres_cursor = postgres_conn.cursor()
-    postgres_cursor.execute("INSERT INTO maclist (switch, port, mac, vendor) VALUES(%s, %s, %s, %s)",  
-        (switch, port, mac, vendor))
+    postgres_cursor.execute("INSERT INTO maclist (switch, port, mac, vendor) VALUES (%s, %s, %s, %s) ON CONFLICT(switch, port)  DO UPDATE SET mac = %s , vendor = %s ",
+     (switch, port, mac, vendor,mac, vendor))
     postgres_conn.commit() 
     postgres_cursor.close()
 
 def dbarp(ip,mac):
     postgres_cursor = postgres_conn.cursor()
-    postgres_cursor.execute("INSERT INTO arplist (ipaddress, macaddress) VALUES(%s, %s)",  (ip, mac))
+    postgres_cursor.execute("INSERT INTO arplist (ip, mac) VALUES (%s, %s) ON CONFLICT(mac)  DO UPDATE SET mac = %s ",
+     (ip, mac, mac))
     postgres_conn.commit() 
     postgres_cursor.close()
 
 def dbfinal(switch,port,mac,vendor,ip):
     
     postgres_cursor = postgres_conn.cursor()
-    postgres_cursor.execute ("INSERT INTO devices (switch, port, mac, vendor, ip, updated) VALUES (%s, %s, %s, %s, %s, %s)", 
-        (switch, port, mac, vendor, ip,  datetime.datetime.utcnow()))
+    postgres_cursor.execute ("INSERT INTO devices (switch, port, mac, vendor, ip, updated) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT(switch, port)  DO UPDATE SET mac = %s , vendor = %s , ip = %s , updated = %s ",
+     (switch, port, mac, vendor, ip,  datetime.datetime.utcnow(),mac, vendor, ip,  datetime.datetime.utcnow()))
+
     
     postgres_conn.commit() 
     postgres_cursor.close()
@@ -119,7 +121,7 @@ me = singleton.SingleInstance()
 
 
 
-cleardatamac()
+#cleardatamac()
 
 
 ######### Get Mac from switches  ##################################################
@@ -189,7 +191,7 @@ print ("Inserted MACLIST")
 
 
 
-cleardataarp()
+#cleardataarp()
 
 
 
@@ -220,6 +222,7 @@ for (errorIndication,
             ipAddress = ipAddress.replace('IP-MIB::ipNetToPhysicalPhysAddress.9.ipv4.', '')
             ipAddress = ipAddress.replace('IP-MIB::ipNetToPhysicalPhysAddress.25.ipv4.', '')
             ipAddress = ipAddress.replace('IP-MIB::ipNetToPhysicalPhysAddress.26.ipv4.', '')
+            ipAddress = ipAddress.replace('IP-MIB::ipNetToPhysicalPhysAddress.7.ipv4.', '')
 
             
             macAddress_ARP = varBind[1].prettyPrint()[-19:] 
@@ -249,7 +252,7 @@ for row in maclist:
     port = row[1]
     mac = row[2]
     vendor = row[3]
-    sql = "SELECT ipaddress FROM arplist WHERE macaddress = '%s'   " %mac
+    sql = "SELECT ip FROM arplist WHERE mac = '%s'   " %mac
     postgres_cursor.execute(sql)
     ip = postgres_cursor.fetchone()    
     if ip is None:
