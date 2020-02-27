@@ -1,0 +1,7 @@
+configparser
+datetime
+pysnmp
+tendo
+psycopg2-binary
+requests
+mac-vendor-lookup
